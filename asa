@@ -1,0 +1,39 @@
+section .bss
+section .data
+    oneMessage db "Hello World",10
+    oneMessageLength equ $-oneMessage
+    oneBuffer db 2 " ", 0Ah
+    oneBufferLength equ 2
+section .text
+ 
+    global _start
+ 
+_start:
+ 
+    sub esp, oneBufferLength*2  ;reserve buffer for chars and eol
+    mov esi, oneMessage         ;source pointer
+    mov edi, esp                ;target pointer = stack pointer
+    mov ah, 0Ah                 ;high byte (LITTLE ENDIAN!)
+    mov ecx, oneBufferLength    ;how to many chars to copy?
+NextCharStdout:
+    lodsb                       ;al = *esi++
+    stosw                       ;*edi++++ = aw
+    loop NextCharStdout
+ 
+; PRINT TO STDOUT (X86)
+; --------------------------------------
+    mov eax, 4                  ; Syscall 4
+    mov ebx, 1                  ; 1 for Stdout
+    mov ecx, esp                ; 
+    mov edx, oneBufferLength*2  ; how many to write?
+    int 80h
+; --------------------------------------
+    mov esp, edi                ; restore esp
+ 
+; EXITING THE PROGRAM (X86)
+; --------------------------------------
+exitProgram:
+    mov eax, 1                  ; Syscall 1
+    mov ebx, 0                  ; 0 Exit Status Code Succesful
+    int 80h
+; --------------------------------------
